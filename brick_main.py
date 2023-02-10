@@ -1,5 +1,6 @@
 import pygame
 import math
+from random import randrange
 
 class Game_utils:
     def __init__(self):
@@ -20,6 +21,29 @@ class Game_utils:
         text_y = 600 / 2 - text_rect.height / 2
         main_window.blit(text_restart, [text_x, text_y])
         pygame.display.update()
+    
+    def populate_bricks_list(self, rows, columns, main_window):
+        brick_between_space = 3
+        bricks_top_space = 30
+        brick_width = main_window.get_width() // columns
+        brick_height = 20
+        duration_color_dict = {1:"green",2:"yellow",3:"orange",4:"red",5:"purple"}
+
+        bricks = []
+        for row in range(rows):
+            for col in range(columns):
+                brick_duration = randrange(1,6)
+                if row == 0:
+                    current_brick = Brick(brick_width * col + brick_between_space * col, \
+                                        brick_height * row + bricks_top_space, \
+                                        brick_width, brick_height, brick_duration, duration_color_dict[brick_duration])
+                else:
+                    current_brick = Brick(brick_width * col + brick_between_space * col, \
+                                        brick_height * row + brick_between_space * row + bricks_top_space, \
+                                        brick_width, brick_height, brick_duration, duration_color_dict[brick_duration])
+                bricks.append(current_brick)
+        
+        return bricks
 
 class Slider:
     def __init__(self, x_screen_position, slider_width):
@@ -44,7 +68,7 @@ class Ball:
     def __init__(self, x_screen_position):
         self.x_screen_position = x_screen_position
         self.y_screen_position = 570
-        self.ball_radius = 10
+        self.ball_radius = 9
         self.ball_color = "blue"
         self.x_speed = 0
         self.y_speed = - self.velocity
@@ -72,7 +96,7 @@ class Ball:
             return True
     
     def bounce_ball_slider(self, slider_object):
-        if not slider_object.rectangle.x <= self.x_screen_position <= slider_object.rectangle.x + slider_object.slider_width:
+        if not (slider_object.rectangle.x <= self.x_screen_position + self.ball_radius and slider_object.rectangle.x + slider_object.slider_width >= self.x_screen_position - self.ball_radius):
             return
         if not 600 >= self.y_screen_position + self.ball_radius >= slider_object.rectangle.y:
             return
@@ -87,11 +111,30 @@ class Ball:
 
         self.change_speed(new_x_speed, new_y_speed)
 
+class Brick:
+    def __init__(self, x_screen_position, y_screen_position, brick_width, brick_height, brick_duration, brick_color):
+        self.x_screen_position = x_screen_position
+        self.y_screen_position = y_screen_position
+        self.brick_width = brick_width
+        self.brick_height = brick_height
+        self.brick_duration = brick_duration
+        self.brick_color = brick_color
+        self.rectangle = pygame.Rect(self.x_screen_position, self.y_screen_position, self.brick_width, self.brick_height)
+        self.duration_color_dict = {1:"green",2:"yellow",3:"orange",4:"red",5:"purple"}
 
-    def stop_ball(self, main_window):
-        self.x_screen_position = main_window.get_width() + 100
-        self.y_screen_position = main_window.get_height() + 100
+    def visualize_brick(self, main_window):
+        pygame.draw.rect(main_window, self.brick_color, self.rectangle)
+    
+    def ball_hit_brick(self, ball_object):
+        if not (ball_object.x_screen_position - ball_object.ball_radius <= self.x_screen_position + self.brick_width and ball_object.x_screen_position + ball_object.ball_radius >= self.x_screen_position):
+            return False
+        if not ball_object.y_screen_position - ball_object.ball_radius <= self.y_screen_position + self.brick_height:
+            return False
 
+        self.brick_duration -= 1
+        ball_object.change_speed(ball_object.x_speed, ball_object.y_speed * - 1) # reverse the vertical direction of the ball
+        return True
+              
 class Brick_Breaker:
     def __init__(self):
         self.width = 800
@@ -106,6 +149,7 @@ class Brick_Breaker:
         self.ball_object = Ball(self.width/2)
 
         self.utilities = Game_utils()
+        self.bricks = self.utilities.populate_bricks_list(5, 10, self.main_window)
 
     def main_loop(self):
         game_running = True
@@ -122,15 +166,21 @@ class Brick_Breaker:
             for game_event in pygame.event.get():
                 if game_event.type == pygame.QUIT:
                     game_running = False
+            for brick in self.bricks:
+                brick.ball_hit_brick(self.ball_object) # will decrease duration by one
+                if brick.brick_duration <= 0:
+                    self.bricks.remove(brick)
+                else:
+                    brick.brick_color = brick.duration_color_dict[brick.brick_duration] # update color of brick
         while game_over:
             self.utilities.game_over_util(self.main_window)
-            self.ball_object.stop_ball(self.main_window)
             for game_over_event in pygame.event.get():
                 if game_over_event.type == pygame.KEYDOWN:
                     if game_over_event.key == pygame.K_SPACE:
                         game_over = False
                         self.ball_object = Ball(self.width/2)
                         self.slider_object = Slider(self.width/2, 120)
+                        self.bricks = self.utilities.populate_bricks_list(5, 10, self.main_window)
                         self.main_loop()
                 elif game_over_event.type == pygame.QUIT:
                     game_over = False
@@ -144,6 +194,9 @@ class Brick_Breaker:
         self.slider_object.visualize_slider(self.main_window)
         # Ball
         self.ball_object.visualize_ball(self.main_window)
+        # Bricks
+        for brick in self.bricks:
+            brick.visualize_brick(self.main_window)
         # Render
         pygame.display.update()
     

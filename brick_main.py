@@ -1,5 +1,6 @@
 import pygame
 import math
+import time
 
 class Game_utils:
     def __init__(self):
@@ -24,7 +25,7 @@ class Game_utils:
     def populate_bricks_list(self, rows, columns, main_window):
         brick_between_space = 5
         bricks_top_space = 30
-        brick_width = main_window.get_width() // columns
+        brick_width = main_window.get_width() // columns - brick_between_space
         brick_height = 20
         duration_color_dict = {5:"purple",4:"red",3:"orange",2:"yellow",1:"green"}
 
@@ -33,7 +34,7 @@ class Game_utils:
             for col in range(columns):
                 if row == 0:
                     brick_duration = 5
-                    current_brick = Brick(brick_width * col + brick_between_space * col, \
+                    current_brick = Brick(brick_width * col + brick_between_space * (col + 1), \
                                         brick_height * row + bricks_top_space, \
                                         brick_width, brick_height, brick_duration, duration_color_dict[brick_duration], brick_difficulty=brick_duration)
                 else:
@@ -47,7 +48,7 @@ class Game_utils:
                         brick_duration = 2
                     else:
                         brick_duration = 1
-                    current_brick = Brick(brick_width * col + brick_between_space * col, \
+                    current_brick = Brick(brick_width * col + brick_between_space * (col + 1), \
                                         brick_height * row + brick_between_space * row + bricks_top_space, \
                                         brick_width, brick_height, brick_duration, duration_color_dict[brick_duration], brick_difficulty=brick_duration)
                 bricks.append(current_brick)
@@ -60,6 +61,11 @@ class Game_utils:
     def track_points(self, points:int, main_window):
         text_points = self.font.render(f"Points: {points}", True, "black")
         main_window.blit(text_points, (10, main_window.get_height() - text_points.get_height() - 10))
+    
+    def start_counter(self, seconds, main_window):
+        text_start_counter = self.font.render(f"{seconds}", True, "black")
+        main_window.blit(text_start_counter, (main_window.get_width()/2 - text_start_counter.get_width()/2, main_window.get_height()/2 - text_start_counter.get_height()/2))
+        pygame.display.update()
 
 class Slider:
     def __init__(self, x_screen_position, slider_width):
@@ -171,10 +177,12 @@ class Brick_Breaker:
         self.ball_object = Ball(self.width/2)
 
         self.utilities = Game_utils()
-        self.bricks = self.utilities.populate_bricks_list(10, 10, self.main_window)
+        self.bricks = self.utilities.populate_bricks_list(10, 11, self.main_window)
 
         self.lives = 3
         self.points = 0
+
+        self.seconds = 3
 
     def main_loop(self):
         game_running = True
@@ -182,6 +190,11 @@ class Brick_Breaker:
         while game_running:
             self.clock.tick(self.FPS)
             self.apply_visuals()
+            while self.seconds > 0:
+                self.utilities.start_counter(self.seconds, self.main_window)
+                time.sleep(1)
+                self.apply_visuals()
+                self.seconds -= 1
             self.slider_object.pressed_keys() # move slider
             self.ball_object.move_ball()
             self.ball_object.bounce_ball_slider(self.slider_object)
@@ -213,7 +226,7 @@ class Brick_Breaker:
                         game_over = False
                         self.ball_object = Ball(self.width/2)
                         self.slider_object = Slider(self.width/2, 120)
-                        self.bricks = self.utilities.populate_bricks_list(10, 10, self.main_window)
+                        self.bricks = self.utilities.populate_bricks_list(10, 11, self.main_window)
                         self.lives = 3
                         self.points = 0
                         self.main_loop()
@@ -224,7 +237,7 @@ class Brick_Breaker:
     
     def apply_visuals(self):
         # Main window
-        self.main_window.fill("white")
+        self.main_window.fill("gray")
         # Slider
         self.slider_object.visualize_slider(self.main_window)
         # Ball

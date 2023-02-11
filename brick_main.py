@@ -183,6 +183,7 @@ class Brick_Breaker:
         self.bricks = self.utilities.populate_bricks_list(10, 11, self.main_window)
 
         self.lives = 3
+        
         self.points = 0
 
         self.seconds = 3

@@ -1,6 +1,7 @@
 import pygame
 import math
 import time
+import game_menus
 
 class Game_utils:
     def __init__(self):
@@ -173,6 +174,8 @@ class Brick_Breaker:
         self.clock = pygame.time.Clock()
         self.FPS = 60
 
+        self.game_menus = game_menus.start_menu()
+
         self.slider_object = Slider(self.width/2, 120)
         self.ball_object = Ball(self.width/2)
 
@@ -184,9 +187,22 @@ class Brick_Breaker:
 
         self.seconds = 3
 
+        self.game_menu_on = True
+
     def main_loop(self):
+        self.main_window.fill("gray")
         game_running = True
         game_over = False
+        if self.game_menu_on:
+            self.game_menus.start_button(self.main_window, enable_clic=False)
+            while self.game_menu_on:
+                start_click = self.game_menus.start_button(self.main_window, enable_clic=True)
+                if start_click:
+                    break
+                for game_event in pygame.event.get():
+                    if game_event.type == pygame.QUIT:
+                        pygame.quit()
+                        quit()
         while game_running:
             self.clock.tick(self.FPS)
             self.apply_visuals()
@@ -205,6 +221,7 @@ class Brick_Breaker:
                     # continue and reposition ball in center of slider
                     self.ball_object.x_screen_position = self.slider_object.rectangle.x + self.slider_object.slider_width/2
                     self.ball_object.y_screen_position = self.slider_object.rectangle.y - self.slider_object.slider_height
+                    self.game_menu_on = False
                     self.main_loop() 
                 else:
                     game_running = False

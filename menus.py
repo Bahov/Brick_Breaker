@@ -1,7 +1,7 @@
 import pygame
+from button import button
 
 class game_menus:
-    space_between_buttons = 20
     pygame.init()
 
     def __init__(self):
@@ -18,13 +18,24 @@ class game_menus:
 
             mouse_position = pygame.mouse.get_pos()
 
-            play_game_rect = self.play_game(main_window)
-            if play_game_rect.collidepoint(mouse_position):
+            play_game_button = button(main_window, "Play Game", "comicsans", main_window.get_width()/2, 200)
+            game_options_button = button(main_window, "Game Options", "comicsans", main_window.get_width()/2, 300)
+            game_info_button = button(main_window, "Game Info", "comicsans", main_window.get_width()/2, 400)
+            quit_game_button = button(main_window, "Quit Game", "comicsans", main_window.get_width()/2, 500)
+
+            if play_game_button.button_rect.collidepoint(mouse_position):
+                play_game_button.change_color("white")
                 if pygame.mouse.get_pressed()[0] == 1: # left mouse butoon [1] middle [2] right
                     return True # continue main loop (exit_game_menu)
-            self.game_options(main_window)
-            self.game_info(main_window)
-            self.quit_game(main_window)
+            if game_options_button.button_rect.collidepoint(mouse_position):
+                game_options_button.change_color("white")
+            if game_info_button.button_rect.collidepoint(mouse_position):
+                game_info_button.change_color("white")
+            if quit_game_button.button_rect.collidepoint(mouse_position):
+                quit_game_button.change_color("white")
+                if pygame.mouse.get_pressed()[0] == 1:
+                    pygame.quit()
+                    quit()
 
             for game_event in pygame.event.get():
                 if game_event.type == pygame.QUIT:
@@ -32,37 +43,3 @@ class game_menus:
                     quit()
             
             pygame.display.update()
-
-    
-    def play_game(self, main_window):
-        play_game_text_font = pygame.font.SysFont("comicsans", 35)
-        play_game_text_x_pos = main_window.get_width()/2
-        play_game_menu_text_y_pos = 200
-        play_game_text = play_game_text_font.render("Play Game", True, "black")
-        play_game_rect = play_game_text.get_rect(center=(play_game_text_x_pos, play_game_menu_text_y_pos))
-        main_window.blit(play_game_text, play_game_rect)
-        return play_game_rect
-
-    def game_options(self, main_window):
-        game_options_text_font = pygame.font.SysFont("comicsans", 35)
-        game_options_text_x_pos = main_window.get_width()/2
-        game_options_menu_text_y_pos = 300
-        game_options_text = game_options_text_font.render("Game Options", True, "black")
-        game_options_rect = game_options_text.get_rect(center=(game_options_text_x_pos, game_options_menu_text_y_pos))
-        main_window.blit(game_options_text, game_options_rect)
-
-    def game_info(self, main_window):
-        game_info_text_font = pygame.font.SysFont("comicsans", 35)
-        game_info_text_x_pos = main_window.get_width()/2
-        game_info_menu_text_y_pos = 400
-        game_info_text = game_info_text_font.render("Game Info", True, "black")
-        game_info_rect = game_info_text.get_rect(center=(game_info_text_x_pos, game_info_menu_text_y_pos))
-        main_window.blit(game_info_text, game_info_rect)
-
-    def quit_game(self, main_window):
-        quit_game_text_font = pygame.font.SysFont("comicsans", 35)
-        quit_game_text_x_pos = main_window.get_width()/2
-        quit_game_menu_text_y_pos = 500
-        quit_game_text = quit_game_text_font.render("Quit Game", True, "black")
-        quit_game_rect = quit_game_text.get_rect(center=(quit_game_text_x_pos, quit_game_menu_text_y_pos))
-        main_window.blit(quit_game_text, quit_game_rect)

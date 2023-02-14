@@ -1,7 +1,7 @@
 import pygame
 import math
 import time
-import game_menus
+import menus
 
 class Game_utils:
     def __init__(self):
@@ -11,16 +11,22 @@ class Game_utils:
     def game_over_util(self, main_window):
         # game over text
         text_game_over = self.font.render("Game Over", True, "black")
-        text_rect = text_game_over.get_rect()
-        text_x = 800 / 2 - text_rect.width / 2
-        text_y = 600 / 3 - text_rect.height / 2
-        main_window.blit(text_game_over, [text_x, text_y])
+        text_x = main_window.get_width()/2
+        text_y = 200
+        text_rect = text_game_over.get_rect(center=(text_x, text_y))
+        main_window.blit(text_game_over, text_rect)
         # restart instruction
         text_restart = self.font.render("To restart press SPACE", True, "black")
-        text_rect = text_restart.get_rect()
-        text_x = 800 / 2 - text_rect.width / 2
-        text_y = 600 / 2 - text_rect.height / 2
-        main_window.blit(text_restart, [text_x, text_y])
+        text_x = main_window.get_width()/2
+        text_y = 300
+        text_rect = text_restart.get_rect(center=(text_x, text_y))
+        main_window.blit(text_restart, text_rect)
+        # back to main menu instruction
+        text_back_to_main = self.font.render("To go back to main menu press M", True, "black")
+        text_x = main_window.get_width()/2
+        text_y = 400
+        text_rect = text_back_to_main.get_rect(center=(text_x, text_y))
+        main_window.blit(text_back_to_main, text_rect)
         pygame.display.update()
     
     def populate_bricks_list(self, rows, columns, main_window):
@@ -174,7 +180,7 @@ class Brick_Breaker:
         self.clock = pygame.time.Clock()
         self.FPS = 60
 
-        self.game_menus = game_menus.start_menu()
+        self.game_menus = menus.game_menus()
 
         self.slider_object = Slider(self.width/2, 120)
         self.ball_object = Ball(self.width/2)
@@ -189,22 +195,18 @@ class Brick_Breaker:
         self.seconds = 3
 
         self.game_menu_on = True
+        self.game_over = False
 
     def main_loop(self):
         self.main_window.fill("gray")
         game_running = True
         game_over = False
-        if self.game_menu_on:
-            self.game_menus.start_button(self.main_window, enable_clic=False)
-            while self.game_menu_on:
-                start_click = self.game_menus.start_button(self.main_window, enable_clic=True)
-                if start_click:
-                    break
-                for game_event in pygame.event.get():
-                    if game_event.type == pygame.QUIT:
-                        pygame.quit()
-                        quit()
         while game_running:
+            while self.game_menu_on:
+                exit_game_menu = self.game_menus.main_menu(self.main_window)
+                if exit_game_menu:
+                    self.game_menu_on = False
+            self.main_window.fill("gray")
             self.clock.tick(self.FPS)
             self.apply_visuals()
             while self.seconds > 0:
@@ -215,14 +217,14 @@ class Brick_Breaker:
             self.slider_object.pressed_keys() # move slider
             self.ball_object.move_ball()
             self.ball_object.bounce_ball_slider(self.slider_object)
-            game_over = self.ball_object.bounce_ball_wall()
-            if game_over:
+            self.game_over = self.ball_object.bounce_ball_wall()
+            if self.game_over:
                 self.lives -= 1
                 if self.lives > 0:
                     # continue and reposition ball in center of slider
                     self.ball_object.x_screen_position = self.slider_object.rectangle.x + self.slider_object.slider_width/2
                     self.ball_object.y_screen_position = self.slider_object.rectangle.y - self.slider_object.slider_height
-                    self.game_menu_on = False
+                    # self.game_menu_on = False
                     self.main_loop() 
                 else:
                     game_running = False
@@ -237,19 +239,16 @@ class Brick_Breaker:
                     self.points += brick.brick_difficulty
                 else:
                     brick.brick_color = brick.duration_color_dict[brick.brick_duration] # update color of brick
-        while game_over:
+        while self.game_over:
             for game_over_event in pygame.event.get():
                 if game_over_event.type == pygame.KEYDOWN:
                     if game_over_event.key == pygame.K_SPACE:
-                        game_over = False
-                        self.ball_object = Ball(self.width/2)
-                        self.slider_object = Slider(self.width/2, 120)
-                        self.bricks = self.utilities.populate_bricks_list(10, 11, self.main_window)
-                        self.lives = 3
-                        self.points = 0
-                        self.main_loop()
+                        self.restart_game()
+                    elif game_over_event.key == pygame.K_m:
+                        self.game_menu_on = True
+                        self.restart_game()
                 elif game_over_event.type == pygame.QUIT:
-                    game_over = False
+                    self.game_over = False
         pygame.quit()
         quit()
     
@@ -269,6 +268,16 @@ class Brick_Breaker:
         self.utilities.track_points(self.points, self.main_window)
         # Render
         pygame.display.update()
+    
+    def restart_game(self):
+        self.game_over = False
+        self.ball_object = Ball(self.width/2)
+        self.slider_object = Slider(self.width/2, 120)
+        self.bricks = self.utilities.populate_bricks_list(10, 11, self.main_window)
+        self.lives = 3
+        self.points = 0
+        self.game_over = False
+        self.main_loop()        
 
 ##################################################
 brick_breaker_game = Brick_Breaker()

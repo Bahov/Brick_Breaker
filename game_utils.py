@@ -29,7 +29,7 @@ class game_utils:
         main_window.blit(text_back_to_main, text_rect)
         pygame.display.update()
     
-    def populate_bricks_list(self, rows, columns, main_window):
+    def populate_bricks_list(self, columns, main_window, level):
         brick_between_space = 3
         brick_width = main_window.get_width() // columns - brick_between_space
         brick_height = 20
@@ -37,7 +37,7 @@ class game_utils:
 
         brick_models = read_yaml_file("brick_models.yml")
         # get random brick model
-        current_model = random.choice(list(brick_models.values()))
+        current_model = brick_models[level]
 
         bricks = []
         for row in range(len(current_model)):

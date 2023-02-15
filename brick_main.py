@@ -17,12 +17,13 @@ class Brick_Breaker:
         self.slider_object = slider(self.width/2, self.main_window)
         self.ball_object = ball(self.width/2)
         self.utilities = game_utils()
-        self.bricks = self.utilities.populate_bricks_list(10, 11, self.main_window)
+        self.bricks = ""
         self.lives = 3
         self.points = 0
         self.seconds = 3
         self.game_menu_on = True
         self.game_over = False
+        self.level = ""
 
     def main_loop(self):
         self.main_window.fill("gray")
@@ -30,7 +31,8 @@ class Brick_Breaker:
         game_over = False
         while game_running:
             while self.game_menu_on:
-                exit_game_menu = self.game_menus.main_menu(self.main_window)
+                exit_game_menu, self.level = self.game_menus.main_menu(self.main_window)
+                self.bricks = self.utilities.populate_bricks_list(11, self.main_window, self.level)
                 if exit_game_menu:
                     self.game_menu_on = False
             self.main_window.fill("gray")
@@ -51,7 +53,6 @@ class Brick_Breaker:
                     # continue and reposition ball in center of slider
                     self.ball_object.x_pos = self.slider_object.rectangle.x + self.slider_object.width/2
                     self.ball_object.y_pos = self.slider_object.rectangle.y - self.slider_object.height
-                    # self.game_menu_on = False
                     self.main_loop() 
                 else:
                     game_running = False

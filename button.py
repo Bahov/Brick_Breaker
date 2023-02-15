@@ -1,7 +1,6 @@
 import pygame
 
 class button:
-    pygame.init()
     def __init__(self, main_window, button_name, text_font, x_pos, y_pos):
         self.main_window = main_window
         self.button_name = button_name

@@ -1,5 +1,7 @@
 import pygame
 from bricks import brick
+from yaml_reader import read_yaml_file
+import random
 
 class game_utils:
     def __init__(self):
@@ -28,34 +30,24 @@ class game_utils:
         pygame.display.update()
     
     def populate_bricks_list(self, rows, columns, main_window):
-        brick_between_space = 5
+        brick_between_space = 3
         brick_width = main_window.get_width() // columns - brick_between_space
         brick_height = 20
         duration_color_dict = {5:"purple",4:"red",3:"orange",2:"yellow",1:"green"}
 
+        brick_models = read_yaml_file("brick_models.yml")
+        # get random brick model
+        current_model = random.choice(list(brick_models.values()))
+
         bricks = []
-        for row in range(rows):
-            for col in range(columns):
-                if row == 0:
-                    brick_duration = 5
-                    current_brick = brick(brick_width * col + brick_between_space * (col + 1), \
-                                        brick_height * row, \
-                                        brick_width, brick_height, brick_duration, duration_color_dict[brick_duration], brick_duration)
-                else:
-                    if row == 1:
-                        brick_duration = 5
-                    elif row in (2,3):
-                        brick_duration = 4
-                    elif row in (4,5):
-                        brick_duration = 3
-                    elif row in (6,7):
-                        brick_duration = 2
-                    else:
-                        brick_duration = 1
+        for row in range(len(current_model)):
+            for col in range(len(current_model[row])):
+                if current_model[row][col] > 0:
+                    brick_duration = current_model[row][col]
                     current_brick = brick(brick_width * col + brick_between_space * (col + 1), \
                                         brick_height * row + brick_between_space * row, \
                                         brick_width, brick_height, brick_duration, duration_color_dict[brick_duration], brick_duration)
-                bricks.append(current_brick)
+                    bricks.append(current_brick)
         return bricks
     
     def track_lives(self, remaining_lives:int, main_window):
